@@ -1,0 +1,24 @@
+server:
+  port: ${SERVER_PORT:9999}
+
+spring:
+  application:
+    name: identity-server
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521/XEPDB1
+    username: IDENTITY_USER
+    password: identity123
+    driver-class-name: oracle.jdbc.OracleDriver
+  data:
+    redis:
+      host: localhost
+      port: 6380
+
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
