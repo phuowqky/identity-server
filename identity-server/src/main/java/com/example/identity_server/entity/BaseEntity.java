@@ -1,9 +1,11 @@
 package com.example.identity_server.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.time.LocalDateTime;
-
+@MappedSuperclass
+@Data
 public class BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_generator")

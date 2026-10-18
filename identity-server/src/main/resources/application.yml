@@ -1,3 +1,34 @@
+#server:
+#  port: ${SERVER_PORT:9999}
+#
+#spring:
+#  application:
+#    name: identity-server
+#  datasource:
+#    url: jdbc:oracle:thin:@localhost:1521/XEPDB1
+#    username: IDENTITY_USER
+#    password: identity123
+#    driver-class-name: oracle.jdbc.OracleDriver
+#  data:
+#    redis:
+#      host: localhost
+#      port: 6380
+#
+#  jpa:
+#    database-platform: org.hibernate.dialect.OracleDialect
+#    show-sql: true
+#    hibernate:
+#      ddl-auto: none
+#    properties:
+#      hibernate:
+#        format_sql: true
+#
+#
+#jwt:
+#  secret-key: identity-server-secret-key-12345678901234567890
+#  expiration: 900000
+
+
 server:
   port: ${SERVER_PORT:9999}
 
@@ -7,7 +38,7 @@ spring:
   datasource:
     url: jdbc:oracle:thin:@localhost:1521/XEPDB1
     username: IDENTITY_USER
-    password: identity123
+    password: ${DB_PASSWORD:identity123}
     driver-class-name: oracle.jdbc.OracleDriver
   data:
     redis:
@@ -22,3 +53,42 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+# JWT nội bộ của identity server (API /me, và session token trong cookie SSO_SESSION)
+jwt:
+  secret-key: ${IDP_JWT_SECRET:identity-server-secret-key-12345678901234567890}
+  expiration: 900000
+
+# SSO
+sso:
+  cookie-name: SSO_SESSION
+  cookie-secure: ${SSO_COOKIE_SECURE:false}   # dev chạy http -> false; prod bắt buộc true
+  session-ttl-ms: 28800000                    # 8 giờ "đăng nhập một lần"
+  code-ttl-seconds: 60
+  cleanup-interval-ms: 300000                 # job dọn AUTH_CODE mỗi 5 phút
+  login-page: http://localhost:4200/login
+  allowed-origins:                            # origin frontend Angular của các app
+    - http://localhost:4200
+    - http://localhost:9900
+    - https://app-a.example.com
+    - https://app-b.example.com
+  # Chỉ dùng để seed vào bảng CLIENT_APP lần đầu; sau đó sửa trực tiếp trong DB
+  apps:
+    - app-id: app-a
+      name: App A
+      redirect-uris:
+        - http://localhost:4200/auth/callback
+        - https://app-a.example.com/auth/callback
+      jwt-secret: ${APP_A_JWT_SECRET}           # phải = jwt.secret-key của backend App A
+      token-ttl-ms: 3600000
+    - app-id: app-b
+      name: App B
+      redirect-uris:
+        - http://localhost:4201/auth/callback
+        - https://app-b.example.com/auth/callback
+      jwt-secret: ${APP_B_JWT_SECRET}           # phải = jwt.secret-key của backend App B
+      token-ttl-ms: 3600000
+
+  logging:
+    level:
+      org.springframework.security: DEBUG
